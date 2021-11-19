@@ -5,6 +5,7 @@ import com.pblgllgs.ecommerce.entity.Product;
 import com.pblgllgs.ecommerce.entity.ProductCategory;
 import com.pblgllgs.ecommerce.entity.State;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
@@ -20,6 +21,8 @@ import java.util.Set;
 @Configuration
 public class MyDataRestConfig implements RepositoryRestConfigurer {
 
+    @Value("${allowed.origins}")
+    private String [] theAllowedOrigins;
 
     private EntityManager entityManager;
 
@@ -30,7 +33,7 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
-        HttpMethod[] theUnsupportedActions = {HttpMethod.DELETE,HttpMethod.PUT,HttpMethod.POST};
+        HttpMethod[] theUnsupportedActions = {HttpMethod.DELETE,HttpMethod.PUT,HttpMethod.POST,HttpMethod.PATCH};
 
         //desactiva los metodos delete, put y post que se pasan por un arreglo
         disableHttpMethods(Product.class,config, theUnsupportedActions);
@@ -40,6 +43,9 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
         //llama al metodo de ayuda interna
         exposeIds(config);
+
+        //configure cors mapping
+        cors.addMapping(config.getBasePath()+"/**").allowedOrigins(theAllowedOrigins);
     }
 
     private void disableHttpMethods(Class theClass,RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
